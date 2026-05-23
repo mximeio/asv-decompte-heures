@@ -951,8 +951,8 @@
   }
   .syn-bar {
     display: flex;
-    height: 14px;
-    border-radius: 7px;
+    height: 6px;
+    border-radius: 3px;
     overflow: hidden;
     background: var(--color-bg);
     margin-bottom: 10px;
@@ -963,9 +963,9 @@
     min-width: 0;
   }
   /* Premier et dernier segments arrondis pour rendu plus net si un seul segment */
-  .syn-bar .seg:first-child { border-radius: 7px 0 0 7px; }
-  .syn-bar .seg:last-child { border-radius: 0 7px 7px 0; }
-  .syn-bar .seg:only-child { border-radius: 7px; }
+  .syn-bar .seg:first-child { border-radius: 3px 0 0 3px; }
+  .syn-bar .seg:last-child { border-radius: 0 3px 3px 0; }
+  .syn-bar .seg:only-child { border-radius: 3px; }
 
   .syn-legend {
     display: grid;
@@ -1990,7 +1990,7 @@
 
     /* Synthèse — sections Quand/Comment */
     .syn-section { margin-top: 12px; }
-    .syn-bar { height: 12px; margin-bottom: 8px; }
+    .syn-bar { margin-bottom: 8px; }
     .syn-legend { gap: 6px 12px; }
     .syn-leg .name { font-size: 11px; }
     .syn-leg .val { font-size: 12px; }
