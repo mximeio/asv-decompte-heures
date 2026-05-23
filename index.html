@@ -902,63 +902,66 @@
   tr.invalid-day:hover .row-action.remove { opacity: 1; }
 
   /* ============ SYNTHÈSE / DONUTS ============ */
-  .month-summary { padding: 24px; }
+  .month-summary { padding: 18px 24px 22px; }
+  /* Headline du mois : même style que .insight-headline (Repères) */
   .month-big {
-    margin-bottom: 24px;
-    padding-bottom: 22px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: 16px;
   }
   .month-big .label {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--color-text-mute);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 700;
   }
   .month-big .value {
     font-family: var(--font);
-    font-size: 56px;
+    font-size: 30px;
     line-height: 1;
     font-weight: 900;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
     font-feature-settings: "tnum";
   }
   .month-big .value .unit {
-    font-size: 22px;
-    color: var(--color-text-mute);
+    font-size: 14px;
+    color: var(--color-text-soft);
     font-weight: 400;
-    margin-left: 6px;
+    margin-left: 3px;
   }
   .month-big .note {
     font-size: 12px;
     color: var(--color-text-mute);
-    margin-top: 10px;
+    margin-top: 6px;
   }
 
-  .breakdown { display: grid; gap: 6px; }
+  /* Sections du breakdown (QUAND / COMMENT) — style cohérent avec Repères */
+  .breakdown { display: grid; gap: 4px; }
   .bk-section-label {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--color-text-mute);
     font-weight: 700;
-    margin-bottom: 2px;
-    padding-bottom: 4px;
+    margin-bottom: 4px;
+    margin-top: 14px;
+    padding-bottom: 6px;
     border-bottom: 1px dotted var(--color-border);
   }
+  .bk-section-label:first-child { margin-top: 0; }
   .breakdown-row {
     display: grid;
-    grid-template-columns: 16px 1fr auto auto;
-    gap: 12px;
+    grid-template-columns: 12px 1fr auto auto;
+    gap: 10px;
     align-items: center;
-    padding: 7px 0;
-    border-bottom: 1px solid var(--color-border-light);
+    padding: 6px 0;
   }
-  .breakdown-row:last-child { border-bottom: none; }
   .breakdown-row .dot {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
   }
   .breakdown-row .name {
@@ -973,19 +976,20 @@
   }
   .breakdown-row .val {
     font-family: var(--font);
-    font-size: 17px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 900;
     color: var(--color-text);
     font-feature-settings: "tnum";
     text-align: right;
-    min-width: 60px;
+    min-width: 52px;
   }
 
+  /* Donuts plus discrets, alignés visuellement avec le reste */
   .donut-wrap {
-    padding: 8px 24px 28px;
+    padding: 14px 24px 18px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 12px;
     border-top: 1px solid var(--color-border-light);
   }
   .donut-block { text-align: center; }
@@ -995,11 +999,11 @@
     letter-spacing: 0.12em;
     color: var(--color-text-mute);
     font-weight: 700;
-    margin: 12px 0 8px;
+    margin: 4px 0 6px;
   }
   .donut-block canvas {
-    max-height: 160px;
-    max-width: 200px;
+    max-height: 120px;
+    max-width: 150px;
     margin: 0 auto;
     display: block;
   }
@@ -1976,18 +1980,21 @@
     .panel-sub { font-size: 10px; }
 
     /* Panels génériques */
-    .panel-header { padding: 14px 14px; }
+    .panel-header { padding: 14px 16px; }
     .panel { border-radius: 12px; }
-    .month-summary { padding: 16px 14px; gap: 16px; }
+    .month-summary { padding: 14px 16px 18px; }
 
-    /* ====== DONUTS — compacter ====== */
+    /* Total du mois (synthèse) — garde le style headline, juste padding allégé */
+    .month-big .value { font-size: 26px; }
+    .month-big .value .unit { font-size: 12px; }
+    .breakdown-row { padding: 5px 0; }
+
+    /* ====== DONUTS ====== */
     .donut-wrap {
-      grid-template-columns: 1fr 1fr;
+      padding: 12px 16px 14px;
       gap: 8px;
-      padding: 14px;
     }
-    .donut-block-title { font-size: 9px; }
-    .donut-block canvas { max-height: 110px; }
+    .donut-block canvas { max-height: 100px; max-width: 130px; }
 
     /* ====== À VÉRIFIER — compacter quand vide ====== */
     .verify-panel .panel-header { padding: 12px 14px; }
@@ -1995,13 +2002,7 @@
     .verify-list { padding: 0; }
     .verify-item { padding: 10px 14px; }
 
-    /* ====== REPÈRES — compacter ====== */
-    .insights-wrap { padding: 16px 14px; gap: 14px; }
-    .insights-headline .total { font-size: 28px; }
-    .insights-cards { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .insights-card { padding: 10px 12px; }
-    .insights-card .value { font-size: 14px; }
-    .insights-bar-row { font-size: 11px; gap: 6px; }
+    /* ====== REPÈRES — laisser tel quel (s'inspire pour Synthèse) ====== */
 
     /* ====== BILAN ANNUEL — pas de scroll horizontal forcé ====== */
     .yearly-table { font-size: 11px; }
