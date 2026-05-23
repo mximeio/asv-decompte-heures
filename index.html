@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
-<!-- ║  VERSION  :  2026-05-23 · 15h05                                  ║ -->
+<!-- ║  VERSION  :  2026-05-23 · 15h20                                  ║ -->
 <!-- ║  Modifie cette ligne à chaque mise à jour pour repérer la prod   ║ -->
 <!-- ╚══════════════════════════════════════════════════════════════════╝ -->
 <html lang="fr">
@@ -1834,6 +1834,44 @@
     padding: 24px;
     background: linear-gradient(180deg, var(--color-bg), var(--color-surface));
   }
+
+  /* ============ LOADING OVERLAY ============ */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--color-bg);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    animation: fadeIn 200ms ease;
+  }
+  .loading-overlay[hidden] { display: none; }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .loading-spinner {
+    width: 38px;
+    height: 38px;
+    border: 3px solid rgba(6, 73, 105, 0.12);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .loading-text {
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--color-text-soft);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
   .login-card {
     width: 100%;
     max-width: 420px;
@@ -2109,7 +2147,27 @@
 
   /* Hauteur du viewport iOS : utiliser dvh quand dispo (évite que la barre Safari masque le contenu) */
   @supports (height: 100dvh) {
-    .login-screen { min-height: 100dvh; }
+    .login-screen {
+      min-height: 100dvh;
+      /* Fixe la hauteur exactement à la viewport, sans débordement → pas d'ascenseur */
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow: hidden;
+      padding: 12px;
+      /* Le contenu reste centré, mais s'il déborde verticalement (clavier ouvert),
+         on l'aligne en haut pour qu'on voit toujours le formulaire */
+      align-items: flex-start;
+      padding-top: max(20px, env(safe-area-inset-top));
+    }
+    .login-card {
+      border-radius: 14px;
+      padding: 24px 20px 20px;
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .login-title { font-size: 28px; }
+    .login-sub { font-size: 13px; margin: 10px 0 18px; }
   }
 
 </style>
@@ -2147,6 +2205,12 @@
 </div>
 
 <!-- ============ APPLICATION ============ -->
+<!-- Overlay de chargement (affiché pendant la récupération des données) -->
+<div id="loadingOverlay" class="loading-overlay" hidden>
+  <div class="loading-spinner" aria-hidden="true"></div>
+  <div class="loading-text">Chargement de vos données…</div>
+</div>
+
 <div id="appWrap" hidden>
 <div class="container">
 
@@ -4660,11 +4724,15 @@ function syncPanelHeights() {
   setupLoginUI();
   auth.onAuthStateChanged(async (user) => {
     if (user) {
-      // Connecté → afficher l'app
+      // Connecté → afficher l'app (mais d'abord le loader pendant le chargement)
       document.getElementById("loginScreen").hidden = true;
-      document.getElementById("appWrap").hidden = false;
+      const loadingOverlay = document.getElementById("loadingOverlay");
+      loadingOverlay.hidden = false;
+      // appWrap reste hidden pendant le chargement pour éviter le flash "app vide"
       await loadFromStorage();
+      document.getElementById("appWrap").hidden = false;
       renderAll();
+      loadingOverlay.hidden = true;
       // Affiche l'email dans la section "Compte" du menu kebab
       const userEl = document.getElementById("actionsUser");
       userEl.textContent = user.email;
@@ -4684,6 +4752,7 @@ function syncPanelHeights() {
       // Déconnecté → afficher le login, réinitialiser le state
       document.getElementById("loginScreen").hidden = false;
       document.getElementById("appWrap").hidden = true;
+      document.getElementById("loadingOverlay").hidden = true;
       state.data = {};
       state.order = [];
       state.years = {};
