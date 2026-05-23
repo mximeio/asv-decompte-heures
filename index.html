@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
-<!-- ║  VERSION  :  2026-05-23 · 14h45                                  ║ -->
+<!-- ║  VERSION  :  2026-05-23 · 15h00                                  ║ -->
 <!-- ║  Modifie cette ligne à chaque mise à jour pour repérer la prod   ║ -->
 <!-- ╚══════════════════════════════════════════════════════════════════╝ -->
 <html lang="fr">
@@ -2483,18 +2483,56 @@ function monthsInActiveYear() {
 // Bascule vers une autre année avec préservation intelligente du mois actif
 function selectYear(year) {
   if (state.activeYear === year) return;
-  const currentMonthName = state.active ? realMonthName(state.active) : null;
-  const inTarget = sortedMonths().filter(m => yearOf(m) === year);
-  // 1. Chercher le même nom de mois dans la nouvelle année
-  let newActive = inTarget.find(m => realMonthName(m) === currentMonthName);
-  // 2. Sinon, prendre le mois le plus récent
-  if (!newActive && inTarget.length > 0) {
-    newActive = inTarget[inTarget.length - 1];
-  }
   state.activeYear = year;
+  const newActive = pickMonthForYear(year);
   if (newActive) state.active = newActive;
   renderAll();
   saveToStorage();
+}
+
+// Choisit le mois à afficher pour une année donnée :
+//  - Si c'est l'année EN COURS : le mois actuel s'il existe, sinon le plus proche du mois actuel
+//  - Sinon : le premier mois chronologique disponible dans cette année
+function pickMonthForYear(year) {
+  const inYear = sortedMonths().filter(m => yearOf(m) === year);
+  if (inYear.length === 0) return null;
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonthIdx = now.getMonth(); // 0-11
+
+  if (year === currentYear) {
+    // Année en cours : mois actuel s'il existe, sinon le plus proche
+    const currentMonthName = MONTHS_ALL[currentMonthIdx];
+    const exact = inYear.find(m => realMonthName(m) === currentMonthName);
+    if (exact) return exact;
+
+    let best = null;
+    let bestDist = Infinity;
+    for (const key of inYear) {
+      const m = MONTHS_ALL.indexOf(realMonthName(key));
+      if (m === -1) continue;
+      const dist = Math.abs(m - currentMonthIdx);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = key;
+      }
+    }
+    return best;
+  }
+
+  // Autre année : premier mois chronologique
+  let best = null;
+  let bestIdx = Infinity;
+  for (const key of inYear) {
+    const m = MONTHS_ALL.indexOf(realMonthName(key));
+    if (m === -1) continue;
+    if (m < bestIdx) {
+      bestIdx = m;
+      best = key;
+    }
+  }
+  return best;
 }
 
 // Année d'un mois (peut être null si non renseignée)
@@ -3055,16 +3093,26 @@ async function loadFromStorage() {
     setStatus("⚠ Erreur de chargement", true);
   }
 
-  // À l'ouverture : choisir le mois le plus proche de la date courante
-  const closest = pickClosestMonth();
-  if (closest) {
-    state.active = closest;
-    state.activeYear = yearOf(closest) || state.activeYear;
-  } else if (state.active && yearOf(state.active)) {
-    state.activeYear = yearOf(state.active);
+  // À l'ouverture : choisir l'année à afficher + le bon mois dans cette année.
+  // Règle :
+  //  - Si l'utilisateur a une activeYear sauvegardée, on la respecte
+  //  - Sinon, on prend l'année actuelle si elle existe, sinon la plus récente
+  //  - Dans tous les cas, on applique pickMonthForYear() pour choisir le bon mois
+  const years = allYears();
+  const currentYear = new Date().getFullYear();
+  let targetYear = state.activeYear;
+  if (!targetYear || !years.includes(targetYear)) {
+    targetYear = years.includes(currentYear) ? currentYear : (years[years.length - 1] || currentYear);
+  }
+  state.activeYear = targetYear;
+
+  const monthForYear = pickMonthForYear(targetYear);
+  if (monthForYear) {
+    state.active = monthForYear;
+  } else if (state.active && yearOf(state.active) === targetYear) {
+    // Conserver l'ancien si pas d'autre choix
   } else {
-    const years = allYears();
-    if (years.length > 0) state.activeYear = years[years.length - 1];
+    state.active = null;
   }
 
   // Nettoyer les jours invalides
