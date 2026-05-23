@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
-<!-- ║  VERSION  :  2026-05-23 · 15h00                                  ║ -->
+<!-- ║  VERSION  :  2026-05-23 · 15h05                                  ║ -->
 <!-- ║  Modifie cette ligne à chaque mise à jour pour repérer la prod   ║ -->
 <!-- ╚══════════════════════════════════════════════════════════════════╝ -->
 <html lang="fr">
@@ -4669,6 +4669,17 @@ function syncPanelHeights() {
       const userEl = document.getElementById("actionsUser");
       userEl.textContent = user.email;
       userEl.setAttribute("title", user.email);
+      // Remet le scroll en haut (sur mobile, iOS peut avoir scrollé pendant la saisie du mdp)
+      // requestAnimationFrame pour s'assurer que le DOM est rendu, puis blur les inputs
+      // pour fermer le clavier iOS qui pourrait encore décaler le viewport
+      requestAnimationFrame(() => {
+        if (document.activeElement && document.activeElement.blur) {
+          document.activeElement.blur();
+        }
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      });
     } else {
       // Déconnecté → afficher le login, réinitialiser le state
       document.getElementById("loginScreen").hidden = false;
