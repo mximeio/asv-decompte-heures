@@ -80,6 +80,10 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { font-size: 16px; -webkit-text-size-adjust: 100%; }
 
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
   body {
     font-family: var(--font);
     font-size: 15px;
@@ -1927,45 +1931,82 @@
   /* ============ RESPONSIVE iPhone / petits écrans (≤ 480px) ============ */
   @media (max-width: 480px) {
     /* Container : padding minimal + respect du safe area iOS (notch) */
-    :root { --container-pad: 14px; }
+    :root { --container-pad: 12px; }
     .container {
       padding: 20px var(--container-pad) 32px;
       padding-left: max(var(--container-pad), env(safe-area-inset-left));
       padding-right: max(var(--container-pad), env(safe-area-inset-right));
+      max-width: 100%;
     }
 
     /* Header */
-    .header { padding: 18px 16px; }
+    .header { padding: 18px 14px; }
     .header-top { gap: 12px; }
-    .title { font-size: 30px; }
+    .header-left { min-width: 0; }
+    .title { font-size: 28px; }
     .title em { font-size: 0.7em; }
     .subtitle { font-size: 13px; margin-top: 10px; }
     .eyebrow { font-size: 10px; margin-bottom: 10px; }
 
     /* Stats globales : 2 colonnes plus compactes (héritage de 700px ok) */
-    .global-stats .stat { padding: 12px 16px; }
+    .global-stats .stat { padding: 12px 14px; }
     .month-big .value { font-size: 36px; }
     .month-big .label { font-size: 11px; }
 
     /* Year pills : plus compactes */
     .year-pills { gap: 6px; margin-top: 20px; }
 
-    /* Tableau : scroll horizontal, polices déjà adaptées en 700px */
-    table { min-width: 480px; }
-
-    /* Panels et padding */
-    .panel-header { padding: 14px 16px; }
+    /* ====== TABLEAU PRINCIPAL ====== */
+    /* Sur mobile : on cache les 4 colonnes purement calculées (Nuit/Jour/Dim/Fériés).
+       L'utilisateur saisit Début/Fin et voit Heures et Admin. La synthèse contient
+       toujours les détails ventilés. Le tableau tient ainsi dans 100% de la largeur. */
+    .col-nuit, .col-jour, .col-dim, .col-fer { display: none; }
+    table { min-width: 0; font-size: 12px; }
+    thead th, tbody td { padding: 6px 3px; }
+    .table-wrap { font-size: 12px; }
     .panel-title { font-size: 13px; }
-    .panel-sub { font-size: 11px; }
+    .panel-sub { font-size: 10px; }
 
-    /* Menu kebab dropdown : un peu plus étroit pour ne pas dépasser */
+    /* Panels génériques */
+    .panel-header { padding: 14px 14px; }
+    .panel { border-radius: 12px; }
+    .month-summary { padding: 16px 14px; gap: 16px; }
+
+    /* ====== DONUTS — compacter ====== */
+    .donut-wrap {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 14px;
+    }
+    .donut-block-title { font-size: 9px; }
+    .donut-block canvas { max-height: 110px; }
+
+    /* ====== À VÉRIFIER — compacter quand vide ====== */
+    .verify-panel .panel-header { padding: 12px 14px; }
+    .verify-empty { min-height: 48px; padding: 12px 14px; }
+    .verify-list { padding: 0; }
+    .verify-item { padding: 10px 14px; }
+
+    /* ====== REPÈRES — compacter ====== */
+    .insights-wrap { padding: 16px 14px; gap: 14px; }
+    .insights-headline .total { font-size: 28px; }
+    .insights-cards { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .insights-card { padding: 10px 12px; }
+    .insights-card .value { font-size: 14px; }
+    .insights-bar-row { font-size: 11px; gap: 6px; }
+
+    /* ====== BILAN ANNUEL — pas de scroll horizontal forcé ====== */
+    .yearly-table { font-size: 11px; }
+    .yearly-table thead th, .yearly-table tbody td { padding: 8px 4px; }
+
+    /* Menu kebab dropdown : adapté au viewport */
     .actions-dropdown {
       min-width: 200px;
       right: 0;
       max-width: calc(100vw - 32px);
     }
 
-    /* Modal "Ajouter un mois" */
+    /* Modal */
     .modal {
       width: calc(100vw - 24px);
       max-width: none;
@@ -1973,8 +2014,8 @@
       margin: 12px;
     }
     .modal h3 { font-size: 18px; }
-    .month-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px; }
-    .month-grid button { padding: 10px 4px; font-size: 12px; }
+    .modal-month-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px; }
+    .modal-month-grid button { padding: 10px 4px; font-size: 12px; }
 
     /* Tooltip du chart : limite à la largeur du viewport */
     .chart-tooltip {
@@ -1982,7 +2023,7 @@
       max-width: 280px;
     }
 
-    /* Boutons : zone tactile mini 44×44 selon les guidelines iOS */
+    /* Boutons : zone tactile mini */
     .actions-trigger { width: 42px; height: 42px; }
     .btn { min-height: 42px; }
     .link-btn { min-height: 32px; }
@@ -1990,10 +2031,10 @@
     /* Login screen */
     .login-screen { padding: 16px; }
     .login-card { border-radius: 14px; }
-    .login-field input { font-size: 16px; /* évite le zoom auto iOS sur focus */ }
+    .login-field input { font-size: 16px; }
 
-    /* Chart compare-area : hauteur minimale réduite pour ne pas écraser le tableau */
-    .chart-wrap { min-height: 280px; padding: 16px; }
+    /* Chart compare-area : hauteur réduite */
+    .chart-wrap { min-height: 260px; padding: 14px; }
   }
 
   /* Hauteur du viewport iOS : utiliser dvh quand dispo (évite que la barre Safari masque le contenu) */
@@ -2121,10 +2162,10 @@
               <th title="Heure de début de garde (ex. 20 pour 20h, 8.5 pour 8h30)">Début</th>
               <th title="Heure de fin de garde — peut être inférieure au début si la garde finit le lendemain matin">Fin</th>
               <th title="Total d'heures travaillées · calculé automatiquement depuis Début et Fin (changement d'heure pris en compte)">Heures</th>
-              <th title="Heures effectuées la nuit · calculé automatiquement (toute la garde si elle touche la plage 21h-6h, sinon 0)">Nuit</th>
-              <th title="Heures effectuées en journée · calculé automatiquement (Heures − Nuit)">Jour</th>
-              <th title="Heures effectuées un dimanche · calculé automatiquement">Dim.</th>
-              <th title="Heures effectuées un jour férié · calculé automatiquement (fériés français détectés automatiquement)">Fériés</th>
+              <th class="col-nuit" title="Heures effectuées la nuit · calculé automatiquement (toute la garde si elle touche la plage 21h-6h, sinon 0)">Nuit</th>
+              <th class="col-jour" title="Heures effectuées en journée · calculé automatiquement (Heures − Nuit)">Jour</th>
+              <th class="col-dim" title="Heures effectuées un dimanche · calculé automatiquement">Dim.</th>
+              <th class="col-fer" title="Heures effectuées un jour férié · calculé automatiquement (fériés français détectés automatiquement)">Fériés</th>
               <th title="Heures de tâches administratives (séparées des gardes) — saisie manuelle">Admin</th>
               <th aria-label="Actions" style="width:22px"></th>
             </tr>
@@ -3337,10 +3378,10 @@ function renderTable() {
       <td>Total</td>
       <td></td><td></td>
       <td>${fmtNum(t.heures)} h</td>
-      <td style="color:var(--nuit)">${fmtNum(t.nuit)}</td>
-      <td style="color:var(--jour)">${fmtNum(t.jour)}</td>
-      <td style="color:var(--dimanche)">${fmtNum(t.dimanche)}</td>
-      <td style="color:var(--ferie)">${fmtNum(t.ferie)}</td>
+      <td class="col-nuit" style="color:var(--nuit)">${fmtNum(t.nuit)}</td>
+      <td class="col-jour" style="color:var(--jour)">${fmtNum(t.jour)}</td>
+      <td class="col-dim" style="color:var(--dimanche)">${fmtNum(t.dimanche)}</td>
+      <td class="col-fer" style="color:var(--ferie)">${fmtNum(t.ferie)}</td>
       <td style="color:var(--admin)">${fmtNum(t.admin)}</td>
       <td></td>
     </tr>
