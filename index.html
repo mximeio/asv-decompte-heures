@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#064969">
 <!-- Méta-tags iOS pour l'ajout à l'écran d'accueil (PWA-style) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Décompte heures">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -532,8 +532,12 @@
   .table-wrap {
     overflow-x: auto;
     overflow-y: auto;
+    /* Hauteur contrainte → scroll interne du tableau, thead + total restent sticky */
+    max-height: 70vh;
     scroll-padding-top: 42px;
     scroll-padding-bottom: 56px;
+    /* Scroll fluide sur iOS */
+    -webkit-overflow-scrolling: touch;
   }
   /* Marge "safe" autour des inputs pour les sticky thead/total — évite les scrollIntoView parasites */
   .cell-input { scroll-margin-top: 50px; scroll-margin-bottom: 60px; }
@@ -1963,7 +1967,11 @@
     .col-nuit, .col-jour, .col-dim, .col-fer { display: none; }
     table { min-width: 0; font-size: 12px; }
     thead th, tbody td { padding: 6px 3px; }
-    .table-wrap { font-size: 12px; }
+    .table-wrap {
+      font-size: 12px;
+      /* Hauteur limitée sur mobile : ~55% de la hauteur viewport (scroll interne du tableau) */
+      max-height: 60vh;
+    }
     .panel-title { font-size: 13px; }
     .panel-sub { font-size: 10px; }
 
