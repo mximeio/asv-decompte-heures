@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
-<!-- ║  VERSION  :  2026-05-23 · 16h10                                  ║ -->
+<!-- ║  VERSION  :  2026-05-23 · 16h30                                  ║ -->
 <!-- ║  Modifie cette ligne à chaque mise à jour pour repérer la prod   ║ -->
 <!-- ╚══════════════════════════════════════════════════════════════════╝ -->
 <html lang="fr">
@@ -1612,6 +1612,19 @@
     transform: translateX(-50%) translateY(0);
     opacity: 1;
   }
+  .toast.error {
+    background: var(--color-primary);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 13px;
+    max-width: calc(100vw - 32px);
+    padding: 14px 22px;
+    cursor: pointer;
+    pointer-events: auto;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.4;
+  }
 
   /* ============ MODAL ============ */
   .modal-overlay {
@@ -2463,12 +2476,12 @@
 // 6. Remplacer le placeholder ci-dessous par TA config (les valeurs sont publiques)
 // ============================================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyDSpDHhqjqJ_oENFvCSB3aJlTd7dS6MDfE",
-  authDomain: "timetrackingapp-93409.firebaseapp.com",
-  projectId: "timetrackingapp-93409",
-  storageBucket: "timetrackingapp-93409.firebasestorage.app",
-  messagingSenderId: "959596931410",
-  appId: "1:959596931410:web:4d222ca0aca69e73c9328b"
+  apiKey: "REMPLACE_PAR_TA_CLE_API",
+  authDomain: "ton-projet.firebaseapp.com",
+  projectId: "ton-projet",
+  storageBucket: "ton-projet.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef1234567890"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -3160,7 +3173,10 @@ async function loadFromStorage() {
     }
   } catch(e) {
     console.error("Firestore load error:", e);
-    setStatus("⚠ Erreur de chargement", true);
+    const code = e.code || "";
+    const msg = e.message || String(e);
+    // Toast plus long pour les erreurs critiques
+    toastError(`⚠ Chargement impossible — ${code ? code + " : " : ""}${msg}`);
   }
 
   // À l'ouverture : choisir l'année à afficher + le bon mois dans cette année.
@@ -3227,8 +3243,22 @@ function setStatus(msg, err) {
 function toast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg;
+  t.classList.remove("error");
   t.classList.add("show");
   setTimeout(()=> t.classList.remove("show"), 1800);
+}
+
+function toastError(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("error", "show");
+  // Affichage long (8s) pour erreurs — le toast reste cliquable pour fermer
+  const onClick = () => {
+    t.classList.remove("show");
+    t.removeEventListener("click", onClick);
+  };
+  t.addEventListener("click", onClick);
+  setTimeout(()=> { t.classList.remove("show"); t.removeEventListener("click", onClick); }, 8000);
 }
 
 // ============ HELPERS ============
@@ -4409,6 +4439,25 @@ async function importJSON(file) {
       return;
     }
 
+    // Sanitize : Firestore refuse les valeurs undefined ; on les convertit en null/0.
+    // On parcourt récursivement toutes les données importées.
+    function sanitizeForFirestore(value) {
+      if (value === undefined) return null;
+      if (value === null) return null;
+      if (typeof value !== "object") return value;
+      if (Array.isArray(value)) return value.map(sanitizeForFirestore);
+      const out = {};
+      for (const k in value) {
+        if (Object.prototype.hasOwnProperty.call(value, k)) {
+          const v = sanitizeForFirestore(value[k]);
+          if (v !== undefined) out[k] = v;
+        }
+      }
+      return out;
+    }
+    imported.data = sanitizeForFirestore(imported.data);
+    imported.years = sanitizeForFirestore(imported.years);
+
     state.data = imported.data;
     state.order = imported.order;
     state.years = imported.years;
@@ -4418,11 +4467,18 @@ async function importJSON(file) {
     cleanupAllMonths();
     recomputeAllAutoColumns();
 
-    await saveToStorage();
+    try {
+      await saveToStorage();
+    } catch (saveErr) {
+      console.error("Save after import failed:", saveErr);
+      toastError(`⚠ Import lu mais sauvegarde échouée — ${saveErr.code || saveErr.message}`);
+      return;
+    }
 
     renderAll();
     toast(`✓ Import réussi : ${monthsCount} mois, ${fmtNum(hoursCount)} h`);
   } catch (e) {
+    console.error("Import error:", e);
     alert(`Échec de l'import : ${e.message}`);
   }
 }
