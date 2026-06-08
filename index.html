@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
-<!-- ║  VERSION  :  2026-05-23 · 16h30                                  ║ -->
+<!-- ║  VERSION  :  2026-05-23 · 16h45                                  ║ -->
 <!-- ║  Modifie cette ligne à chaque mise à jour pour repérer la prod   ║ -->
 <!-- ╚══════════════════════════════════════════════════════════════════╝ -->
 <html lang="fr">
@@ -2216,8 +2216,6 @@
     </form>
 
     <div class="login-links">
-      <button type="button" id="loginToggleMode" class="link-btn">Créer un compte</button>
-      <span class="login-dot">·</span>
       <button type="button" id="loginForgot" class="link-btn">Mot de passe oublié ?</button>
     </div>
   </div>
@@ -4838,13 +4836,12 @@ function syncPanelHeights() {
 
 // ============ LOGIN UI ============
 function setupLoginUI() {
-  let mode = "signin"; // "signin" | "signup" | "forgot"
+  let mode = "signin"; // "signin" | "forgot"
   const form = document.getElementById("loginForm");
   const emailEl = document.getElementById("loginEmail");
   const passEl = document.getElementById("loginPassword");
   const passField = document.getElementById("loginPasswordField");
   const submitBtn = document.getElementById("loginSubmit");
-  const toggleBtn = document.getElementById("loginToggleMode");
   const forgotBtn = document.getElementById("loginForgot");
   const errorEl = document.getElementById("loginError");
   const infoEl = document.getElementById("loginInfo");
@@ -4870,34 +4867,23 @@ function setupLoginUI() {
     if (m === "signin") {
       subEl.textContent = "Connecte-toi pour accéder à tes données.";
       submitBtn.textContent = "Se connecter";
-      toggleBtn.textContent = "Créer un compte";
       passField.hidden = false;
       passEl.required = true;
       passEl.setAttribute("autocomplete", "current-password");
-      forgotBtn.hidden = false;
-    } else if (m === "signup") {
-      subEl.textContent = "Crée un compte pour suivre tes heures de garde.";
-      submitBtn.textContent = "Créer le compte";
-      toggleBtn.textContent = "J'ai déjà un compte";
-      passField.hidden = false;
-      passEl.required = true;
-      passEl.setAttribute("autocomplete", "new-password");
-      forgotBtn.hidden = true;
+      forgotBtn.textContent = "Mot de passe oublié ?";
     } else if (m === "forgot") {
       subEl.textContent = "Saisis ton email pour recevoir un lien de réinitialisation.";
       submitBtn.textContent = "Envoyer le mail";
-      toggleBtn.textContent = "Retour à la connexion";
       passField.hidden = true;
       passEl.required = false;
-      forgotBtn.hidden = true;
+      forgotBtn.textContent = "Retour à la connexion";
     }
   }
 
-  toggleBtn.addEventListener("click", () => {
-    if (mode === "signin") setMode("signup");
+  forgotBtn.addEventListener("click", () => {
+    if (mode === "signin") setMode("forgot");
     else setMode("signin");
   });
-  forgotBtn.addEventListener("click", () => setMode("forgot"));
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -4908,8 +4894,6 @@ function setupLoginUI() {
     try {
       if (mode === "signin") {
         await auth.signInWithEmailAndPassword(email, password);
-      } else if (mode === "signup") {
-        await auth.createUserWithEmailAndPassword(email, password);
       } else if (mode === "forgot") {
         await auth.sendPasswordResetEmail(email);
         showInfo(`✓ Email envoyé à ${email}. Vérifie ta boîte mail.`);
@@ -4933,11 +4917,10 @@ function translateAuthError(e) {
     "auth/user-not-found": "Aucun compte trouvé avec cet email.",
     "auth/wrong-password": "Mot de passe incorrect.",
     "auth/invalid-credential": "Identifiants invalides.",
-    "auth/email-already-in-use": "Un compte existe déjà avec cet email.",
-    "auth/weak-password": "Mot de passe trop faible (6 caractères min.).",
     "auth/too-many-requests": "Trop de tentatives. Réessaie plus tard.",
     "auth/network-request-failed": "Erreur réseau. Vérifie ta connexion.",
     "auth/missing-password": "Renseigne ton mot de passe.",
+    "auth/user-disabled": "Ce compte a été désactivé.",
   };
   return map[e.code] || e.message || "Erreur de connexion.";
 }
